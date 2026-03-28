@@ -3,10 +3,17 @@ import os
 import tempfile
 from rag_pipeline import RAGPipeline
 
-st.set_page_config(page_title="RAG DocChat App", layout="wide")
+st.set_page_config(page_title="DocChat", layout="wide")
 
-st.title("📚 RAG DocChat App")
-st.markdown("Upload up to 5 PDFs and chat with them using an advanced Hybrid RAG pipeline (Multi-Query + HyDE + Reciprocal Rank Fusion)!")
+st.title("📚 DocChat")
+st.markdown("Upload up to 5 PDFs and chat with them using an advanced Hybrid RAG pipeline (Multi-Query + HyDE + RAG-Fusion)!")
+
+if "pipeline" not in st.session_state:
+    st.session_state.pipeline = None
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "uploader_key" not in st.session_state:
+    st.session_state.uploader_key = 0
 
 # Sidebar config
 with st.sidebar:
@@ -15,27 +22,35 @@ with st.sidebar:
     api_key = st.text_input("OpenAI API Key", type="password")
     model_selection = st.selectbox(
         "Model Selection",
-        ["gpt-5.4-mini", "gpt-5.4-nano"]
+        ["gpt-5.4-nano", "gpt-5.4-mini"]
     )
+
+    st.header("Controls")
+    if st.button("Clear Chat History", use_container_width=True):
+        st.session_state.messages = []
+        st.rerun()
+        
+    if st.button("Clear Files and Context", use_container_width=True):
+        st.session_state.uploader_key += 1
+        st.session_state.pipeline = None
+        st.session_state.messages = []
+        st.rerun()
     
     st.header("Upload Documents")
     uploaded_files = st.file_uploader(
         "Upload 1 to 5 PDF files", 
         type="pdf", 
-        accept_multiple_files=True
+        accept_multiple_files=True,
+        key=f"uploader_{st.session_state.uploader_key}",
+        max_upload_size=10
     )
-
-if "pipeline" not in st.session_state:
-    st.session_state.pipeline = None
-if "messages" not in st.session_state:
-    st.session_state.messages = []
 
 # Validate file upload count
 if uploaded_files:
     if len(uploaded_files) > 5:
         st.error("Please upload no more than 5 PDF files.")
     elif len(uploaded_files) >= 1:
-        if st.sidebar.button("Process Documents"):
+        if st.sidebar.button("Process Documents", use_container_width=True):
             if not api_key:
                 st.sidebar.error("Please provide an OpenAI API key.")
             else:
