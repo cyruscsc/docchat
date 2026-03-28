@@ -1,4 +1,3 @@
-import os
 from typing import List
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
 from llama_index.core.node_parser import SentenceSplitter
@@ -6,6 +5,7 @@ from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.schema import NodeWithScore
 from llama_index.readers.file import PyMuPDFReader
+from prompts import MULTI_QUERY_PROMPT, HYDE_PROMPT, FINAL_GENERATION_PROMPT
 
 class RAGPipeline:
     def __init__(self, api_key: str, model_name: str):
@@ -44,7 +44,7 @@ class RAGPipeline:
         hypothetical_docs = self._generate_hypothetical_docs(all_queries)
         
         # 3. Retrieval
-        retriever = self.index.as_retriever(similarity_top_k=5)
+        retriever = self.index.as_retriever(similarity_top_k=20)
         # Combine variations and hypothetical docs to perform search
         search_strings = all_queries + hypothetical_docs
         
@@ -61,8 +61,7 @@ class RAGPipeline:
         return final_answer
         
     def _generate_query_variations(self, query: str) -> List[str]:
-        prompt = f"""You are an AI assistant. Your task is to generate 3 different versions of the given user question to retrieve relevant documents from a vector database. By generating multiple perspectives on the user question, your goal is to help the user overcome some of the limitations of distance-based similarity search. Provide these alternative questions separated by newlines, with nothing else in the response.
-Original question: {query}"""
+        prompt = MULTI_QUERY_PROMPT.format(query=query)
         response = self.llm.complete(prompt)
         variations = [line.strip() for line in response.text.strip().split('\n') if line.strip()]
         return variations[:3]
@@ -70,9 +69,7 @@ Original question: {query}"""
     def _generate_hypothetical_docs(self, queries: List[str]) -> List[str]:
         hypothetical_docs = []
         for q in queries:
-            prompt = f"""Please write a plausible passage to answer the question below.
-Question: {q}
-Passage:"""
+            prompt = HYDE_PROMPT.format(query=q)
             response = self.llm.complete(prompt)
             hypothetical_docs.append(response.text.strip())
         return hypothetical_docs
@@ -96,12 +93,6 @@ Passage:"""
         
     def _generate_final_answer(self, original_query: str, nodes: List[NodeWithScore]) -> str:
         context_str = "\n\n".join([n.node.get_content() for n in nodes])
-        prompt = f"""Context information is below.
----------------------
-{context_str}
----------------------
-Given the context information and not prior knowledge, answer the query.
-Query: {original_query}
-Answer:"""
+        prompt = FINAL_GENERATION_PROMPT.format(context_str=context_str, query=original_query)
         response = self.llm.complete(prompt)
         return response.text
