@@ -38,8 +38,8 @@ with st.sidebar:
     
     st.header("Upload Documents")
     uploaded_files = st.file_uploader(
-        "Upload 1 to 5 PDF files", 
-        type="pdf", 
+        "Upload 1 to 5 files (PDF, TXT, MD, DOCX)", 
+        type=["pdf", "txt", "md", "docx"], 
         accept_multiple_files=True,
         key=f"uploader_{st.session_state.uploader_key}",
         max_upload_size=10
@@ -48,7 +48,7 @@ with st.sidebar:
 # Validate file upload count
 if uploaded_files:
     if len(uploaded_files) > 5:
-        st.error("Please upload no more than 5 PDF files.")
+        st.error("Please upload no more than 5 files.")
     elif len(uploaded_files) >= 1:
         if st.sidebar.button("Process Documents", use_container_width=True):
             if not api_key:

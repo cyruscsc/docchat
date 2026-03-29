@@ -4,7 +4,7 @@ from llama_index.core.node_parser import SentenceSplitter
 from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.schema import NodeWithScore
-from llama_index.readers.file import PyMuPDFReader
+from llama_index.readers.file import PyMuPDFReader, MarkdownReader, DocxReader
 from prompts import MULTI_QUERY_PROMPT, HYDE_PROMPT, FINAL_GENERATION_PROMPT
 
 class RAGPipeline:
@@ -23,10 +23,14 @@ class RAGPipeline:
     
     def process_documents(self, input_files: List[str]):
         """Load and index documents."""
-        extractor = {".pdf": PyMuPDFReader()}
+        extractor = {
+            ".pdf": PyMuPDFReader(),
+            ".md": MarkdownReader(),
+            ".docx": DocxReader()
+        }
         reader = SimpleDirectoryReader(
             input_files=input_files, 
-            required_exts=[".pdf"],
+            required_exts=[".pdf", ".txt", ".md", ".docx"],
             file_extractor=extractor
         )
         documents = reader.load_data()

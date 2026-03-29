@@ -5,3 +5,4 @@ llama-index-embeddings-openai
 python-dotenv
 llama-index-readers-file
 pymupdf
+docx2txt
