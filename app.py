@@ -1,12 +1,18 @@
 import streamlit as st
 import os
 import tempfile
+import yaml
 from rag_pipeline import RAGPipeline
+
+config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+with open(config_path, "r") as f:
+    config = yaml.safe_load(f)
+APP_CONFIG = config["app"]
 
 st.set_page_config(page_title="DocChat", layout="wide")
 
 st.title("📚 DocChat")
-st.markdown("Upload up to 5 PDFs and chat with them using an advanced Hybrid RAG pipeline (Multi-Query + HyDE + RAG-Fusion)!")
+st.markdown("Upload up to 5 documents and chat with them using an advanced Hybrid RAG pipeline (Multi-Query + HyDE + RAG-Fusion)!")
 
 if "pipeline" not in st.session_state:
     st.session_state.pipeline = None
@@ -22,7 +28,7 @@ with st.sidebar:
     api_key = st.text_input("OpenAI API Key", type="password")
     model_selection = st.selectbox(
         "Model Selection",
-        ["gpt-5.4-nano", "gpt-5.4-mini"]
+        APP_CONFIG["llm_options"]
     )
 
     st.header("Controls")
@@ -38,17 +44,17 @@ with st.sidebar:
     
     st.header("Upload Documents")
     uploaded_files = st.file_uploader(
-        "Upload 1 to 5 files (PDF, TXT, MD, DOCX)", 
+        f"Upload 1 to {APP_CONFIG['max_file_upload_limit']} files (PDF, TXT, MD, DOCX)", 
         type=["pdf", "txt", "md", "docx"], 
         accept_multiple_files=True,
         key=f"uploader_{st.session_state.uploader_key}",
-        max_upload_size=10
+        max_upload_size=APP_CONFIG["max_upload_size_mb"]
     )
 
 # Validate file upload count
 if uploaded_files:
-    if len(uploaded_files) > 5:
-        st.error("Please upload no more than 5 files.")
+    if len(uploaded_files) > APP_CONFIG["max_file_upload_limit"]:
+        st.error(f"Please upload no more than {APP_CONFIG['max_file_upload_limit']} files.")
     elif len(uploaded_files) >= 1:
         if st.sidebar.button("Process Documents", use_container_width=True):
             if not api_key:

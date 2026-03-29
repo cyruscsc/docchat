@@ -1,0 +1,14 @@
+app:
+  llm_options:
+    - gpt-5.4-nano
+    - gpt-5.4-mini
+  max_file_upload_limit: 5
+  max_upload_size_mb: 10
+
+rag:
+  chunk_size: 512
+  chunk_overlap: 50
+  multi_query_variations: 3
+  retrieval_top_k: 20
+  rrf_top_k: 5
+  rrf_k_parameter: 60

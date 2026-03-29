@@ -6,6 +6,13 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.schema import NodeWithScore
 from llama_index.readers.file import PyMuPDFReader, MarkdownReader, DocxReader
 from prompts import MULTI_QUERY_PROMPT, HYDE_PROMPT, FINAL_GENERATION_PROMPT
+import yaml
+import os
+
+config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+with open(config_path, "r") as f:
+    config = yaml.safe_load(f)
+RAG_CONFIG = config["rag"]
 
 class RAGPipeline:
     def __init__(self, api_key: str, model_name: str):
@@ -17,7 +24,10 @@ class RAGPipeline:
         
         Settings.llm = self.llm
         Settings.embed_model = self.embed_model
-        Settings.node_parser = SentenceSplitter(chunk_size=512, chunk_overlap=50)
+        Settings.node_parser = SentenceSplitter(
+            chunk_size=RAG_CONFIG["chunk_size"], 
+            chunk_overlap=RAG_CONFIG["chunk_overlap"]
+        )
         
         self.index = None
     
@@ -40,15 +50,15 @@ class RAGPipeline:
         if not self.index:
             return "Please upload documents first."
             
-        # 1. Multi-Query: Create 3 variations
-        query_variations = self._generate_query_variations(user_query)
+        # 1. Multi-Query: Create variations
+        query_variations = self._generate_query_variations(user_query, num_variations=RAG_CONFIG["multi_query_variations"])
         all_queries = [user_query] + query_variations
         
         # 2. HyDE: Generate plausible answer for each query
         hypothetical_docs = self._generate_hypothetical_docs(all_queries)
         
         # 3. Retrieval
-        retriever = self.index.as_retriever(similarity_top_k=20)
+        retriever = self.index.as_retriever(similarity_top_k=RAG_CONFIG["retrieval_top_k"])
         # Combine variations and hypothetical docs to perform search
         search_strings = all_queries + hypothetical_docs
         
@@ -58,17 +68,17 @@ class RAGPipeline:
             all_results.append(results)
             
         # 4. RRF (Reciprocal Rank Fusion)
-        reranked_docs = self._reciprocal_rank_fusion(all_results, top_k=5)
+        reranked_docs = self._reciprocal_rank_fusion(all_results, top_k=RAG_CONFIG["rrf_top_k"], k_param=RAG_CONFIG["rrf_k_parameter"])
         
         # 5. Final Generation
         final_answer = self._generate_final_answer(user_query, reranked_docs)
         return final_answer
         
-    def _generate_query_variations(self, query: str) -> List[str]:
-        prompt = MULTI_QUERY_PROMPT.format(query=query)
+    def _generate_query_variations(self, query: str, num_variations: int = 3) -> List[str]:
+        prompt = MULTI_QUERY_PROMPT.format(num_variations=num_variations, query=query)
         response = self.llm.complete(prompt)
         variations = [line.strip() for line in response.text.strip().split('\n') if line.strip()]
-        return variations[:3]
+        return variations[:num_variations]
         
     def _generate_hypothetical_docs(self, queries: List[str]) -> List[str]:
         hypothetical_docs = []
@@ -78,8 +88,7 @@ class RAGPipeline:
             hypothetical_docs.append(response.text.strip())
         return hypothetical_docs
         
-    def _reciprocal_rank_fusion(self, results_list: List[List[NodeWithScore]], top_k: int = 5) -> List[NodeWithScore]:
-        k_param = 60
+    def _reciprocal_rank_fusion(self, results_list: List[List[NodeWithScore]], top_k: int = 5, k_param: int = 60) -> List[NodeWithScore]:
         fused_scores = {}
         node_map = {}
         
