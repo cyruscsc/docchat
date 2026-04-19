@@ -1,14 +1,9 @@
 import streamlit as st
 import os
 import tempfile
-import yaml
-from rag_pipeline import RAGPipeline
 from agents.doc_chat_agent import DocChatAgent
-
-config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
-with open(config_path, "r") as f:
-    config = yaml.safe_load(f)
-APP_CONFIG = config["app"]
+from core.config import APP_CONFIG
+from tools.rag_tool import RAGPipeline
 
 st.set_page_config(page_title="DocChat", layout="wide")
 

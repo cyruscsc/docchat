@@ -23,10 +23,10 @@ from typing import Any, TYPE_CHECKING
 
 from llama_index.core.agent import AgentWorkflow
 from llama_index.core.tools import BaseTool
-from prompts import AGENT_SYSTEM_PROMPT
+from core.prompts import AGENT_SYSTEM_PROMPT
 
 if TYPE_CHECKING:
-    from rag_pipeline import RAGPipeline
+    from tools.rag_tool import RAGPipeline
 
 
 class DocChatAgent:

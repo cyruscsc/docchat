@@ -7,18 +7,11 @@ a valid Tavily API key, so the agent cannot invoke it otherwise.
 
 from __future__ import annotations
 
-import os
-import yaml
 from typing import Callable
 
 from llama_index.core.tools import FunctionTool
 
-# Resolve config relative to the project root (one level above this file)
-_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_config_path = os.path.join(_ROOT, "config.yaml")
-with open(_config_path) as _f:
-    _config = yaml.safe_load(_f)
-_WEB_CFG = _config["web_search"]
+from core.config import WEB_SEARCH_CONFIG as _WEB_CFG
 
 
 def create_web_search_tool(
