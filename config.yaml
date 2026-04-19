@@ -12,3 +12,11 @@ rag:
   retrieval_top_k: 20
   rrf_top_k: 5
   rrf_k_parameter: 60
+
+web_search:
+  # Minimum top RRF score to accept the RAG answer as sufficiently grounded.
+  # Queries whose best-scoring node falls below this threshold are considered
+  # unanswerable from documents alone and will trigger the web search fallback.
+  relevance_threshold: 0.005
+  # Number of web results fetched from Tavily per fallback query.
+  max_results: 5

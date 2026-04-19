@@ -6,3 +6,4 @@ python-dotenv
 llama-index-readers-file
 pymupdf
 docx2txt
+tavily-python
