@@ -1,9 +1,9 @@
 import streamlit as st
 import os
 import tempfile
-from agents.doc_chat_agent import DocChatAgent
-from core.config import APP_CONFIG
-from tools.rag_tool import RAGPipeline
+from agents import DocChatAgent
+from core import APP_CONFIG
+from tools import RAGPipeline
 
 st.set_page_config(page_title="DocChat", layout="wide")
 

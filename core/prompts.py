@@ -1,19 +1,42 @@
+"""Prompt templates used across the DocChat pipeline.
+
+All prompts are plain ``str`` constants using ``textwrap.dedent`` for
+readability.  They are parameterised with ``.format()`` by their callers.
+
+Prompt inventory
+----------------
+MULTI_QUERY_PROMPT
+    Generates query variations to improve vector-store recall (Multi-Query step).
+HYDE_PROMPT
+    Generates a hypothetical document passage for dense retrieval (HyDE step).
+FINAL_GENERATION_PROMPT
+    Synthesises a grounded answer from retrieved context (RAG generation step).
+WEB_SEARCH_QUERY_PROMPT
+    Rewrites a user question into an optimal web search query.
+WEB_SEARCH_GENERATION_PROMPT
+    Synthesises an answer from Tavily web search results.
+AGENT_SYSTEM_PROMPT
+    System-level instructions for the DocChat AgentWorkflow.
+"""
+
+from __future__ import annotations
+
 import textwrap
 
-MULTI_QUERY_PROMPT = textwrap.dedent("""\
+MULTI_QUERY_PROMPT: str = textwrap.dedent("""\
     Your task is to generate {num_variations} different versions of the given user question to retrieve relevant documents from a vector database. 
     By generating multiple perspectives on the user question, your goal is to help the user overcome some of the limitations of distance-based similarity search. 
     Provide these alternative questions separated by newlines, with nothing else in the response.
     Original question: {query}
 """).strip()
 
-HYDE_PROMPT = textwrap.dedent("""\
+HYDE_PROMPT: str = textwrap.dedent("""\
     Please write a plausible passage to answer the question below.
     Question: {query}
     Passage:
 """).strip()
 
-FINAL_GENERATION_PROMPT = textwrap.dedent("""\
+FINAL_GENERATION_PROMPT: str = textwrap.dedent("""\
     Context information is below.
     ---------------------
     {context_str}
@@ -25,7 +48,7 @@ FINAL_GENERATION_PROMPT = textwrap.dedent("""\
     Answer:
 """).strip()
 
-WEB_SEARCH_QUERY_PROMPT = textwrap.dedent("""\
+WEB_SEARCH_QUERY_PROMPT: str = textwrap.dedent("""\
     You are a search query optimisation expert. Rewrite the user question below into a concise,
     effective web search query that will surface the most relevant and authoritative results.
     Return only the search query string — no explanation, no punctuation other than what belongs
@@ -34,7 +57,7 @@ WEB_SEARCH_QUERY_PROMPT = textwrap.dedent("""\
     Search query:
 """).strip()
 
-WEB_SEARCH_GENERATION_PROMPT = textwrap.dedent("""\
+WEB_SEARCH_GENERATION_PROMPT: str = textwrap.dedent("""\
     You are a helpful assistant. Use the web search results below to answer the user's question.
     Base your answer solely on the provided results. Cite the source URLs inline where relevant
     using markdown link syntax, e.g. [Source Title](https://example.com).
@@ -48,7 +71,7 @@ WEB_SEARCH_GENERATION_PROMPT = textwrap.dedent("""\
     Answer:
 """).strip()
 
-AGENT_SYSTEM_PROMPT = textwrap.dedent("""\
+AGENT_SYSTEM_PROMPT: str = textwrap.dedent("""\
     You are DocChat, an expert AI assistant that answers questions strictly based on
     the user's uploaded documents.
 

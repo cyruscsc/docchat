@@ -10,16 +10,12 @@ Web search fallback is handled at the agent layer — see
 
 from __future__ import annotations
 
-from typing import List
-
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.schema import NodeWithScore
 from llama_index.core.tools import FunctionTool
 from llama_index.readers.file import DocxReader, MarkdownReader, PyMuPDFReader
 
-from core.config import RAG_CONFIG
-from core.llm import create_llm
-from core.prompts import MULTI_QUERY_PROMPT, HYDE_PROMPT, FINAL_GENERATION_PROMPT
+from core import RAG_CONFIG, create_llm, MULTI_QUERY_PROMPT, HYDE_PROMPT, FINAL_GENERATION_PROMPT
 
 
 class RAGPipeline:
@@ -35,7 +31,7 @@ class RAGPipeline:
     # Public API
     # ──────────────────────────────────────────────────────────────────────────
 
-    def process_documents(self, input_files: List[str]) -> None:
+    def process_documents(self, input_files: list[str]) -> None:
         """Load and index documents."""
         extractor = {
             ".pdf": PyMuPDFReader(),
@@ -105,13 +101,13 @@ class RAGPipeline:
     # Private helpers
     # ──────────────────────────────────────────────────────────────────────────
 
-    def _generate_query_variations(self, query: str, num_variations: int = 3) -> List[str]:
+    def _generate_query_variations(self, query: str, num_variations: int = 3) -> list[str]:
         prompt = MULTI_QUERY_PROMPT.format(num_variations=num_variations, query=query)
         response = self.llm.complete(prompt)
         variations = [line.strip() for line in response.text.strip().split("\n") if line.strip()]
         return variations[:num_variations]
 
-    def _generate_hypothetical_docs(self, queries: List[str]) -> List[str]:
+    def _generate_hypothetical_docs(self, queries: list[str]) -> list[str]:
         hypothetical_docs = []
         for q in queries:
             prompt = HYDE_PROMPT.format(query=q)
@@ -121,10 +117,10 @@ class RAGPipeline:
 
     def _reciprocal_rank_fusion(
         self,
-        results_list: List[List[NodeWithScore]],
+        results_list: list[list[NodeWithScore]],
         top_k: int = 5,
         k_param: int = 60,
-    ) -> List[NodeWithScore]:
+    ) -> list[NodeWithScore]:
         """Merge multiple retrieval result lists via Reciprocal Rank Fusion."""
         fused_scores: dict[str, float] = {}
         node_map: dict[str, NodeWithScore] = {}
@@ -141,7 +137,7 @@ class RAGPipeline:
         top_node_ids = [node_id for node_id, _ in sorted_nodes[:top_k]]
         return [node_map[node_id] for node_id in top_node_ids]
 
-    def _generate_final_answer(self, original_query: str, nodes: List[NodeWithScore]) -> str:
+    def _generate_final_answer(self, original_query: str, nodes: list[NodeWithScore]) -> str:
         context_str = "\n\n".join([n.node.get_content() for n in nodes])
         prompt = FINAL_GENERATION_PROMPT.format(context_str=context_str, query=original_query)
         response = self.llm.complete(prompt)

@@ -7,11 +7,11 @@ a valid Tavily API key, so the agent cannot invoke it otherwise.
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from llama_index.core.tools import FunctionTool
 
-from core.config import WEB_SEARCH_CONFIG as _WEB_CFG
+from core import WEB_SEARCH_CONFIG as _WEB_CFG
 
 
 def create_web_search_tool(
