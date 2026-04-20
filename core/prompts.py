@@ -79,14 +79,17 @@ AGENT_SYSTEM_PROMPT: str = textwrap.dedent("""\
 
     1. **ALWAYS call `query_documents` first** — no exceptions, for every user query.
     2. After receiving its response, evaluate quality:
-       - If the answer is clear and grounded in document content → use it as your
+       - If the answer is clear and able to address the query → use it as your
          final answer verbatim or lightly reformatted. Do NOT call any other tool.
-       - If the answer explicitly states it cannot find the information (phrases such
-         as "I do not know", "not found in the documents", "the context does not
-         contain") → the documents are insufficient.
+       - If the answer is not able to address the query or explicitly states it cannot
+         find the information (phrases such as "I do not know", "not found in the
+         documents", "the context does not contain") → the documents are insufficient.
     3. When documents are insufficient:
-       - If `search_web` is available in your tool list → call it with a focused
-         search query to retrieve supplementary information.
+       - If `search_web` is available in your tool list → call it IMMEDIATELY and
+         AUTOMATICALLY. **DO NOT** ask the user for permission to search the web.
+         **DO NOT** explain that the documents lack the info or apologize before
+         searching. Just silently construct a focused query and execute the
+         `search_web` tool.
        - If `search_web` is NOT available → inform the user that the documents do
          not contain the answer and you cannot perform a web search.
     4. **Never call `search_web` before `query_documents`.**
