@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-04-20
+
+### Fixed
+- Refined agent system prompt for seamless web search fallback.
+- Resolved Docker container health check failure.
+
 ## [0.1.0] - 2026-04-19
 
 ### Added
@@ -29,5 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Externalized application configuration via `config.yaml`.
 - Dockerfile and `compose.yml` for containerized deployment.
 
+[0.1.1]: https://github.com/cyruscsc/docchat/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/cyruscsc/docchat/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/cyruscsc/docchat/releases/tag/v0.0.1
