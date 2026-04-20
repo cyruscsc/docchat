@@ -12,3 +12,6 @@ rag:
   retrieval_top_k: 20
   rrf_top_k: 5
   rrf_k_parameter: 60
+
+web_search:
+  max_results: 5
